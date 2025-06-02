@@ -1,14 +1,16 @@
 import json
+import logging
+
+# Setup logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 def lambda_handler(event, context):
-    # Determine HTTP method
     method = event.get("httpMethod") or event.get("requestContext", {}).get("http", {}).get("method", "GET")
-
-    # Log only method and outcome
-    print(f"Received {method} request")
+    logger.info(f"Request method: {method}")
 
     if method == "GET":
-        print("GET request handled successfully")
+        logger.info("Handled GET request successfully")
         return {
             'statusCode': 200,
             'body': 'hello world\n'
@@ -18,19 +20,19 @@ def lambda_handler(event, context):
         try:
             body = json.loads(event.get("body", "{}"))
             msg = body.get("message", "No message provided")
-            print("POST request handled successfully")
+            logger.info(f"Handled POST request successfully with message: {msg}")
             return {
                 'statusCode': 200,
                 'body': f"Received: {msg}\n"
             }
         except Exception as e:
-            print(f"POST request failed: {str(e)}")
+            logger.error(f"Failed to parse POST body: {str(e)}")
             return {
                 'statusCode': 400,
                 'body': f"Error parsing POST body: {str(e)}\n"
             }
 
-    print("Unsupported HTTP method received")
+    logger.warning("Unsupported HTTP method received")
     return {
         'statusCode': 405,
         'body': 'Method Not Allowed\n'
