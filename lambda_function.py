@@ -1,22 +1,30 @@
+import json
+
 def lambda_handler(event, context):
-    method = event.get("httpMethod")
+    # For Lambda Function URLs, method is inside 'requestContext'
+    method = event.get("httpMethod") or event.get("requestContext", {}).get("http", {}).get("method", "GET")
     
     if method == "GET":
         return {
             'statusCode': 200,
-            'body': 'hello world'
+            'body': 'hello world\n'
         }
-    
+
     elif method == "POST":
-        import json
-        body = json.loads(event.get("body", "{}"))
-        msg = body.get("message", "No message provided")
-        return {
-            'statusCode': 200,
-            'body': f"Received: {msg}"
-        }
-    
+        try:
+            body = json.loads(event.get("body", "{}"))
+            msg = body.get("message", "No message provided")
+            return {
+                'statusCode': 200,
+                'body': f"Received: {msg}\n"
+            }
+        except Exception as e:
+            return {
+                'statusCode': 400,
+                'body': f"Error parsing POST body: {str(e)}\n"
+            }
+
     return {
         'statusCode': 405,
-        'body': 'Method Not Allowed'
+        'body': 'Method Not Allowed\n'
     }
