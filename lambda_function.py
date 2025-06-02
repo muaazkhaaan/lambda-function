@@ -1,6 +1,10 @@
 import json
 
 def lambda_handler(event, context):
+    # Log the incoming event for debugging
+    print("=== Incoming Event ===")
+    print(json.dumps(event, indent=2))  # This will appear in CloudWatch Logs
+
     # For Lambda Function URLs, method is inside 'requestContext'
     method = event.get("httpMethod") or event.get("requestContext", {}).get("http", {}).get("method", "GET")
     
