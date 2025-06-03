@@ -2,6 +2,11 @@ import os
 import json
 import logging
 
+# Set up logger with configurable level from environment (default to INFO)
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
+logger = logging.getLogger()
+logger.setLevel(getattr(logging, LOG_LEVEL, logging.INFO))
+
 def lambda_handler(event, context):
     # Determine HTTP method
     method = event.get("httpMethod") or event.get("requestContext", {}).get("http", {}).get("method", "GET")
@@ -19,11 +24,6 @@ def lambda_handler(event, context):
         'statusCode': 405,
         'body': 'Method Not Allowed\n'
     }
-
-# Set up logger with configurable level from environment (default to INFO)
-LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
-logger = logging.getLogger()
-logger.setLevel(getattr(logging, LOG_LEVEL, logging.INFO))
 
 def handle_get():
     # Handles GET requests
