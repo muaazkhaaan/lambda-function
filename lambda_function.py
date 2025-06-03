@@ -2,6 +2,24 @@ import os
 import json
 import logging
 
+def lambda_handler(event, context):
+    # Determine HTTP method
+    method = event.get("httpMethod") or event.get("requestContext", {}).get("http", {}).get("method", "GET")
+    logger.debug(f"Request method: {method}")
+
+    if method == "GET":
+        return handle_get()
+
+    elif method == "POST":
+        return handle_post(event)
+
+    # Catch-all for unsupported methods
+    logger.warning(f"Unsupported HTTP method received: {method}")
+    return {
+        'statusCode': 405,
+        'body': 'Method Not Allowed\n'
+    }
+
 # Set up logger with configurable level from environment (default to INFO)
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
 logger = logging.getLogger()
@@ -33,21 +51,3 @@ def handle_post(event):
             'statusCode': 400,
             'body': f"Error parsing POST body: {str(e)}\n"
         }
-
-def lambda_handler(event, context):
-    # Determine HTTP method
-    method = event.get("httpMethod") or event.get("requestContext", {}).get("http", {}).get("method", "GET")
-    logger.debug(f"Request method: {method}")
-
-    if method == "GET":
-        return handle_get()
-
-    elif method == "POST":
-        return handle_post(event)
-
-    # Catch-all for unsupported methods
-    logger.warning(f"Unsupported HTTP method received: {method}")
-    return {
-        'statusCode': 405,
-        'body': 'Method Not Allowed\n'
-    }
