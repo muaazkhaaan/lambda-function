@@ -1,44 +1,53 @@
+import os
 import json
-import logging  # For logging request and error details
+import logging
 
-# Set up basic logger
+# Set up logger with configurable level from environment (default to INFO)
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger.setLevel(getattr(logging, LOG_LEVEL, logging.INFO))
 
 def lambda_handler(event, context):
-    # Determine HTTP method from event
+    # Determine HTTP method
     method = event.get("httpMethod") or event.get("requestContext", {}).get("http", {}).get("method", "GET")
-    logger.info(f"Request method: {method}")
+    logger.debug(f"Request method: {method}")
 
     if method == "GET":
-        # Respond to GET requests
-        logger.info("Handled GET request successfully")
-        return {
-            'statusCode': 200,
-            'body': 'hello world\n'
-        }
+        return handle_get()
 
     elif method == "POST":
-        # Handle POST request with JSON body
-        try:
-            body = json.loads(event.get("body", "{}"))
-            msg = body.get("message", "No message provided")
-            logger.info(f"Handled POST request successfully with message: {msg}")
-            return {
-                'statusCode': 200,
-                'body': f"Received: {msg}\n"
-            }
-        except Exception as e:
-            # Log and return error if body parsing fails
-            logger.error(f"Failed to parse POST body: {str(e)}")
-            return {
-                'statusCode': 400,
-                'body': f"Error parsing POST body: {str(e)}\n"
-            }
+        return handle_post(event)
 
     # Catch-all for unsupported methods
-    logger.warning("Unsupported HTTP method received")
+    logger.warning(f"Unsupported HTTP method received: {method}")
     return {
         'statusCode': 405,
         'body': 'Method Not Allowed\n'
     }
+
+def handle_get():
+    # Handles GET requests
+    logger.info("GET request handled successfully")
+    return {
+        'statusCode': 200,
+        'body': 'hello world\n'
+    }
+
+def handle_post(event):
+    # Handle POST request with JSON body
+    try:
+        body = json.loads(event.get("body", "{}"))
+        msg = body.get("message", "No message provided")
+        logger.info("POST request handled successfully")
+        logger.debug(f"POST message: {msg}")
+        return {
+            'statusCode': 200,
+            'body': f"Received: {msg}\n"
+        }
+    except Exception as e:
+        # Log and return error if body parsing fails
+        logger.error(f"Failed to parse POST body: {str(e)}")
+        return {
+            'statusCode': 400,
+            'body': f"Error parsing POST body: {str(e)}\n"
+        }
